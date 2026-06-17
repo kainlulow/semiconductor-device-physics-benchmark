@@ -1,0 +1,28 @@
+{
+  "accuracy": 1.0,
+  "correct": 3,
+  "items": [
+    {
+      "answer": "B",
+      "confidence": 0.86,
+      "correct": true,
+      "id": "pn-001",
+      "prediction": "B"
+    },
+    {
+      "answer": "A",
+      "confidence": 0.78,
+      "correct": true,
+      "id": "moscap-001",
+      "prediction": "A"
+    },
+    {
+      "answer": "B",
+      "confidence": 0.72,
+      "correct": true,
+      "id": "mosfet-001",
+      "prediction": "B"
+    }
+  ],
+  "total": 3
+}

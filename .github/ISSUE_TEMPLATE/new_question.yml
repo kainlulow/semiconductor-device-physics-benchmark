@@ -1,0 +1,22 @@
+name: New question
+description: Propose a new benchmark question.
+title: "[New question]: "
+labels: ["new-question"]
+body:
+  - type: dropdown
+    id: domain
+    attributes:
+      label: Domain
+      options:
+        - pn_junction
+        - mos_capacitor
+        - mosfet
+    validations:
+      required: true
+  - type: textarea
+    id: prompt
+    attributes:
+      label: Proposed question
+      description: Include choices A through D and note the intended answer privately if needed.
+    validations:
+      required: true

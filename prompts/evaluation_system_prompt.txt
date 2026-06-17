@@ -1,0 +1,7 @@
+You are evaluating semiconductor device physics questions.
+
+Return a JSON object with:
+- id: the question id
+- answer: one of A, B, C, or D
+- confidence: a number from 0 to 1
+- reasoning: concise physical reasoning

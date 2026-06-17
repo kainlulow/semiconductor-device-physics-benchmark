@@ -1,0 +1,19 @@
+name: Question error
+description: Report a possible issue in an existing benchmark question.
+title: "[Question error]: "
+labels: ["question-error"]
+body:
+  - type: input
+    id: question-id
+    attributes:
+      label: Question ID
+      description: The stable benchmark question ID.
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: Issue
+      description: Describe the ambiguity, error, or proposed correction.
+    validations:
+      required: true

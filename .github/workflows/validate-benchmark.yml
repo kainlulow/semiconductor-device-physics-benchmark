@@ -1,0 +1,20 @@
+name: Validate Benchmark
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r requirements.txt
+      - run: python scripts/validate_dataset.py benchmark/combined_test.jsonl
+      - run: python scripts/validate_responses.py examples/example_model_response.jsonl
+      - run: python scripts/score_responses.py examples/example_model_response.jsonl private/answer_key.example.jsonl
+      - run: pytest

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ModelResponse",
+  "type": "object",
+  "required": ["id", "answer"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "answer": {"type": "string", "enum": ["A", "B", "C", "D"]},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "reasoning": {"type": "string"}
+  },
+  "additionalProperties": false
+}

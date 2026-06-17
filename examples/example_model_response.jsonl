@@ -1,0 +1,3 @@
+{"id":"pn-001","answer":"B","confidence":0.86,"reasoning":"Increasing reverse bias widens the depletion region."}
+{"id":"moscap-001","answer":"A","confidence":0.78,"reasoning":"Positive gate bias attracts electrons at the p-type surface."}
+{"id":"mosfet-001","answer":"B","confidence":0.72,"reasoning":"Pinch-off corresponds to reduced inversion charge near the drain end."}

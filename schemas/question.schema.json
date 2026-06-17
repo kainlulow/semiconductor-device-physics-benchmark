@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BenchmarkQuestion",
+  "type": "object",
+  "required": ["id", "domain", "topic", "question", "choices", "answer_type", "difficulty"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+-[0-9]{3,}$"},
+    "domain": {"type": "string", "enum": ["pn_junction", "mos_capacitor", "mosfet"]},
+    "topic": {"type": "string", "minLength": 1},
+    "question": {"type": "string", "minLength": 1},
+    "choices": {
+      "type": "object",
+      "required": ["A", "B", "C", "D"],
+      "properties": {
+        "A": {"type": "string", "minLength": 1},
+        "B": {"type": "string", "minLength": 1},
+        "C": {"type": "string", "minLength": 1},
+        "D": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "answer_type": {"type": "string", "enum": ["multiple_choice"]},
+    "difficulty": {"type": "string", "enum": ["introductory", "intermediate", "advanced"]},
+    "tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  },
+  "additionalProperties": false
+}

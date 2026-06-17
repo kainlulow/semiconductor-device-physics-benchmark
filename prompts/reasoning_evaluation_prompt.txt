@@ -1,0 +1,7 @@
+Assess whether the model reasoning correctly uses semiconductor device physics.
+
+Check for:
+- correct physical mechanism
+- correct sign convention for bias
+- no contradiction between selected answer and reasoning
+- appropriate use of assumptions

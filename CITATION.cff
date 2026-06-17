@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this benchmark, please cite it using this metadata."
+title: "Semiconductor Device Physics Benchmark"
+authors:
+  - family-names: "Low"
+    given-names: "Kain Lu"
+year: 2026
+license: MIT
+repository-code: "https://github.com/kainlulow/semiconductor-device-physics-benchmark"

@@ -1,0 +1,3 @@
+{"id":"pn-001","answer":"B","rationale":"Reverse bias increases the potential barrier and expands the depletion region."}
+{"id":"moscap-001","answer":"A","rationale":"A positive gate voltage attracts electrons to the p-type semiconductor surface and can produce strong inversion."}
+{"id":"mosfet-001","answer":"B","rationale":"In saturation, the drain-side inversion charge is reduced; current is controlled mainly by source injection and channel conditions."}
