@@ -8,23 +8,39 @@ The benchmark currently covers three device domains:
 - MOS capacitors
 - MOSFETs
 
-The intent is not to claim model performance. This repository supplies question sets, validation tools, response-format conventions, and scoring utilities. Benchmark results should be reported only when model outputs and scoring reports are actually supplied.
+The repository supplies question sets, validation tools, response-format conventions, and scoring utilities. It does not claim model performance. Report benchmark results only when the model outputs, answer key provenance, and generated scoring reports are actually supplied.
 
 ## Motivation
 
-Failure analysis in semiconductor technology often requires careful reasoning about device electrostatics, transport, bias conditions, and measurement signatures. Before evaluating models on open-ended anomaly diagnosis, it is useful to test whether they can answer controlled questions about the underlying device physics. This benchmark is a first step toward that staged evaluation.
+Semiconductor failure analysis often requires careful reasoning about electrostatics, carrier transport, bias conditions, measurement signatures, and non-ideal device behavior. Before evaluating models on open-ended anomaly diagnosis, it is useful to test whether they can answer controlled questions about the underlying device physics. This benchmark is a staged first step toward that broader evaluation.
 
-## Scope
+## Repository Layout
 
-The current release focuses on multiple-choice questions with short physics-based reasoning. Questions are grouped by topic, difficulty, and skill so that results can be analyzed beyond a single aggregate accuracy value.
+```text
+benchmark/            Public JSONL question sets
+schemas/              JSON Schema documentation for questions and responses
+scripts/              Validation, scoring, calibration, and summary utilities
+prompts/              Evaluation and reasoning-review prompts
+examples/             Non-benchmark example response/report files
+tests/                Pytest tests for validators and scorer behavior
+docs/                 Design notes, taxonomy, scoring, and contribution notes
+private/              Ignored private material, except answer_key.example.jsonl
+.github/workflows/   CI validation workflow
+```
 
-Current public files:
+## Benchmark Scope
+
+The current release focuses on multiple-choice questions with short physics-based reasoning. Questions are grouped by topic, difficulty, and skill so results can be analyzed beyond one aggregate accuracy value.
+
+Public benchmark files:
 
 - `benchmark/pn_junction_test.jsonl`
 - `benchmark/mos_capacitor_test.jsonl`
 - `benchmark/mosfet_test.jsonl`
 - `benchmark/combined_test.jsonl`
 - `benchmark/combined_chat_messages_test.jsonl`
+
+Use the domain-specific files when evaluating one topic at a time. Use `combined_test.jsonl` for aggregate evaluation. Use `combined_chat_messages_test.jsonl` when an evaluation harness expects chat-style `system` and `user` messages.
 
 ## Dataset Structure
 
@@ -54,13 +70,29 @@ Canonical benchmark rows are JSONL records with this shape:
 }
 ```
 
-The chat-message file contains the same scientific questions formatted as system/user messages for chat-completion evaluation.
+The chat-message JSONL variant contains the same scientific questions formatted as:
+
+```json
+{
+  "question_id": "PN-01",
+  "messages": [
+    {"role": "system", "content": "..."},
+    {"role": "user", "content": "..."}
+  ]
+}
+```
 
 ## Question Taxonomy
 
 - `topic`: device family, currently PN junction, MOS capacitor, or MOSFET.
 - `difficulty`: `basic`, `intermediate`, or `advanced`.
-- `skill`: the reasoning mode being tested, such as conceptual reasoning, quantitative calculation, bias interpretation, diagnostic reasoning, or failure diagnosis.
+- `skill`: reasoning mode being tested, such as conceptual reasoning, quantitative calculation, bias interpretation, diagnostic reasoning, mechanism discrimination, or failure diagnosis.
+
+Question IDs use stable prefixes:
+
+- `PN-##`
+- `MOSCAP-##`
+- `MOSFET-##`
 
 ## Response Format
 
@@ -76,9 +108,9 @@ Model responses should be one JSON object per line:
 }
 ```
 
-`confidence` is interpreted as a percentage from 0 to 100.
+`selected_option` must be `A`, `B`, `C`, or `D`. `confidence` is interpreted as a percentage from 0 to 100 and is normalized to 0-1 for calibration and Brier-score calculations.
 
-## Evaluation Procedure
+## Quick Start
 
 From a clean clone with Python 3.11 or newer:
 
@@ -89,41 +121,64 @@ python scripts/validate_responses.py examples/example_model_response.jsonl
 pytest
 ```
 
-To score model responses, keep the real answer key outside public version control and pass it explicitly:
+The dataset validator supports canonical question files and the chat-message file. On shells that do not expand `benchmark/*.jsonl`, the script expands the glob internally.
+
+## Scoring A Model Run
+
+Keep the real answer key outside public version control and pass it explicitly:
 
 ```powershell
 python scripts/score_responses.py path/to/model_responses.jsonl path/to/private_answer_key.jsonl --questions benchmark/combined_test.jsonl --output scoring_report.json
 ```
 
-The real answer key should use:
+The real answer key should use one JSON object per line:
 
 ```json
 {"question_id":"PN-00","correct_option":"C"}
 ```
 
-## Scoring Metrics
+The `--questions` argument is optional but recommended. It lets the scorer attach topic, difficulty, and skill metadata to each scored item and produce grouped metrics.
 
-The scoring report is machine-readable JSON and includes:
+## Scoring Report
 
-- selected-option accuracy;
-- results by topic, difficulty, and skill;
-- mean normalized confidence;
-- Brier score using the selected-option confidence;
-- missing response IDs;
-- duplicate response IDs;
-- unknown response IDs;
-- malformed response errors.
+The scoring report is machine-readable JSON with these top-level fields:
+
+- `overall`: total count, correct count, accuracy, mean confidence, and Brier score.
+- `by_topic`: metrics grouped by device topic.
+- `by_difficulty`: metrics grouped by difficulty.
+- `by_skill`: metrics grouped by tested reasoning skill.
+- `diagnostics`: missing response IDs, duplicate response IDs, duplicate answer-key IDs, unknown question IDs, and malformed response errors.
+- `items`: per-question scoring records.
+
+The Brier score uses the model's confidence in its selected option. For a correct selected option the target is 1.0; for an incorrect selected option the target is 0.0.
 
 ## Answer-Key Handling
 
 Do not commit the full answer key. The `private/` directory is ignored by default except for `private/answer_key.example.jsonl`, which contains two illustrative non-benchmark records showing the expected format.
+
+Public question files should not contain answer labels. The examples use `-00` IDs so they demonstrate format without revealing labels for benchmark questions.
+
+## Continuous Integration
+
+The GitHub Actions workflow runs on every push and pull request. It installs the Python test dependency, validates all public benchmark JSONL files, validates the example response file, and runs pytest.
+
+## Contributing
+
+See `CONTRIBUTING.md` and `docs/contributing_questions.md`. In brief:
+
+- preserve the scientific meaning of existing questions unless fixing a clear syntax, consistency, or ambiguity issue;
+- keep answer-key material private;
+- validate changed JSONL files;
+- run tests before opening a pull request;
+- explain any physics-content change explicitly.
 
 ## Limitations
 
 - The benchmark is multiple choice and does not fully measure open-ended derivation quality.
 - The current domains are foundational device topics, not full process-integration or reliability workflows.
 - The public question set may become known to models over time, so held-out private variants are recommended for high-stakes evaluation.
-- The benchmark has not yet been validated against a broad panel of models in this repository.
+- The repository has not yet published broad model-evaluation results.
+- Expert review is still recommended for any scientific-content change.
 
 ## Roadmap
 
@@ -135,6 +190,8 @@ Planned extensions include:
 - anomaly-diagnosis cases based on electrical measurements;
 - semiconductor failure-analysis scenarios that combine device physics, process knowledge, and measurement interpretation.
 
-## Citation
+## Licensing And Citation
 
-Use the metadata in `CITATION.cff` when citing this repository. The software is MIT licensed. For benchmark question data, contributors are encouraged to use or recommend CC BY 4.0 so datasets can be reused with attribution.
+The software in this repository is MIT licensed. For benchmark question data, contributors are encouraged to use or recommend CC BY 4.0 so datasets can be reused with attribution.
+
+Use the metadata in `CITATION.cff` when citing this repository.
