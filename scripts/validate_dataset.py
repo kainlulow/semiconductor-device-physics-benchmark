@@ -1,56 +1,78 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-try:
-    from jsonschema import Draft202012Validator
-except ModuleNotFoundError:  # pragma: no cover - exercised in minimal runtimes.
-    Draft202012Validator = None
-
-from scripts.common import duplicate_ids, read_jsonl
+from scripts.common import VALID_OPTIONS, duplicate_ids, is_valid_question_id, read_jsonl
 
 
-def _fallback_errors(row: dict, path: Path, index: int) -> list[str]:
+def _validate_canonical_question(row: dict[str, Any], path: Path, index: int) -> list[str]:
+    """Validate one benchmark question row."""
     errors: list[str] = []
-    required = ["id", "domain", "topic", "question", "choices", "answer_type", "difficulty"]
+    required = ["question_id", "topic", "difficulty", "skill", "question", "options"]
     for key in required:
         if key not in row:
             errors.append(f"{path}:{index}:{key}: missing required property")
 
-    if row.get("domain") not in {"pn_junction", "mos_capacitor", "mosfet"}:
-        errors.append(f"{path}:{index}:domain: invalid domain")
-    if row.get("answer_type") != "multiple_choice":
-        errors.append(f"{path}:{index}:answer_type: invalid answer type")
-    if row.get("difficulty") not in {"introductory", "intermediate", "advanced"}:
-        errors.append(f"{path}:{index}:difficulty: invalid difficulty")
+    if not is_valid_question_id(row.get("question_id")):
+        errors.append(f"{path}:{index}:question_id: expected PN-##, MOSCAP-##, or MOSFET-##")
+    if row.get("difficulty") not in {"basic", "intermediate", "advanced"}:
+        errors.append(f"{path}:{index}:difficulty: expected basic, intermediate, or advanced")
 
-    choices = row.get("choices")
-    if not isinstance(choices, dict):
-        errors.append(f"{path}:{index}:choices: expected object")
-    elif set(choices) != {"A", "B", "C", "D"}:
-        errors.append(f"{path}:{index}:choices: expected choices A, B, C, and D")
+    for key in ["topic", "skill", "question"]:
+        if key in row and not isinstance(row[key], str):
+            errors.append(f"{path}:{index}:{key}: expected string")
+        elif key in row and not row[key].strip():
+            errors.append(f"{path}:{index}:{key}: expected non-empty string")
+
+    options = row.get("options")
+    if not isinstance(options, dict):
+        errors.append(f"{path}:{index}:options: expected object")
+    elif set(options) != VALID_OPTIONS:
+        errors.append(f"{path}:{index}:options: expected exactly A, B, C, and D")
+    else:
+        for option, text in options.items():
+            if not isinstance(text, str) or not text.strip():
+                errors.append(f"{path}:{index}:options.{option}: expected non-empty string")
     return errors
 
 
-def validate_dataset(path: Path, schema_path: Path = Path("schemas/question.schema.json")) -> list[str]:
+def _validate_chat_question(row: dict[str, Any], path: Path, index: int) -> list[str]:
+    """Validate one chat-formatted benchmark row."""
+    errors: list[str] = []
+    if not is_valid_question_id(row.get("question_id")):
+        errors.append(f"{path}:{index}:question_id: expected PN-##, MOSCAP-##, or MOSFET-##")
+
+    messages = row.get("messages")
+    if not isinstance(messages, list) or not messages:
+        errors.append(f"{path}:{index}:messages: expected non-empty list")
+        return errors
+
+    for message_index, message in enumerate(messages, start=1):
+        if not isinstance(message, dict):
+            errors.append(f"{path}:{index}:messages[{message_index}]: expected object")
+            continue
+        if message.get("role") not in {"system", "user", "assistant"}:
+            errors.append(f"{path}:{index}:messages[{message_index}].role: invalid role")
+        if not isinstance(message.get("content"), str) or not message["content"].strip():
+            errors.append(f"{path}:{index}:messages[{message_index}].content: expected non-empty string")
+    return errors
+
+
+def validate_dataset(path: Path) -> list[str]:
+    """Validate a public benchmark JSONL file and return human-readable errors."""
     errors: list[str] = []
     rows = read_jsonl(path)
 
-    if Draft202012Validator is None:
-        for index, row in enumerate(rows, start=1):
-            errors.extend(_fallback_errors(row, path, index))
-    else:
-        schema = json.loads(schema_path.read_text(encoding="utf-8"))
-        validator = Draft202012Validator(schema)
-        for index, row in enumerate(rows, start=1):
-            for error in validator.iter_errors(row):
-                location = ".".join(str(part) for part in error.path) or "<root>"
-                errors.append(f"{path}:{index}:{location}: {error.message}")
+    for index, row in enumerate(rows, start=1):
+        if "messages" in row:
+            errors.extend(_validate_chat_question(row, path, index))
+        else:
+            errors.extend(_validate_canonical_question(row, path, index))
 
     for row_id in sorted(duplicate_ids(rows)):
         errors.append(f"{path}: duplicate id {row_id}")
@@ -60,15 +82,26 @@ def validate_dataset(path: Path, schema_path: Path = Path("schemas/question.sche
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate benchmark JSONL questions.")
-    parser.add_argument("path", type=Path)
-    parser.add_argument("--schema", type=Path, default=Path("schemas/question.schema.json"))
+    parser.add_argument("paths", nargs="+", type=Path)
     args = parser.parse_args()
 
-    errors = validate_dataset(args.path, args.schema)
+    paths: list[Path] = []
+    for path in args.paths:
+        if any(character in str(path) for character in "*?["):
+            paths.extend(sorted(Path().glob(str(path))))
+        else:
+            paths.append(path)
+    if not paths:
+        print("no benchmark files matched")
+        return 1
+
+    errors: list[str] = []
+    for path in paths:
+        errors.extend(validate_dataset(path))
     if errors:
         print("\n".join(errors))
         return 1
-    print(f"validated {args.path}")
+    print(f"validated {len(paths)} benchmark file(s)")
     return 0
 
 

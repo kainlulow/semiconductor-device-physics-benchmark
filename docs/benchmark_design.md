@@ -1,10 +1,5 @@
 # Benchmark Design
 
-The benchmark is organized around core semiconductor device physics concepts that are commonly taught in device physics and microelectronics courses. Questions should test physical understanding rather than memorized phrasing.
+This benchmark tests foundational semiconductor-device physics before moving to semiconductor failure-analysis tasks. The public release focuses on controlled multiple-choice questions that require physical interpretation, quantitative estimation, and diagnostic reasoning.
 
-## Design Goals
-
-- Cover PN junctions, MOS capacitors, and MOSFETs.
-- Use stable question IDs and one JSON object per line.
-- Keep public questions separate from private answer keys.
-- Support deterministic scoring for multiple-choice answers.
+The public benchmark deliberately separates question text from the full answer key. This supports transparent dataset inspection without publishing all scoring labels in the benchmark directory.

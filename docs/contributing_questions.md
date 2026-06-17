@@ -1,11 +1,11 @@
 # Contributing Questions
 
-## Checklist
+Use one JSON object per line. Required fields are `question_id`, `topic`, `difficulty`, `skill`, `question`, and `options`.
 
-- Use a stable ID in the form `domain-001`.
-- Provide four answer choices labeled `A` through `D`.
-- Avoid ambiguous bias sign conventions.
-- State assumptions when the answer depends on ideality, doping, geometry, or operating region.
-- Validate the changed JSONL file before opening a pull request.
+Question IDs should use the topic prefix:
 
-Real answer keys should be shared through the private evaluation channel, not committed to the public repository.
+- `PN-##`
+- `MOSCAP-##`
+- `MOSFET-##`
+
+Keep scientific content stable. If changing an existing question, explain whether the update is editorial or changes the intended physics. Do not commit real answer-key rows with public question IDs.

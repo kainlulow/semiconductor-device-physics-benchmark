@@ -7,11 +7,9 @@ name = "semiconductor-device-physics-benchmark"
 version = "0.1.0"
 description = "Validation and scoring utilities for a semiconductor device physics benchmark."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {text = "MIT"}
-dependencies = [
-  "jsonschema>=4.22",
-]
+dependencies = []
 
 [project.optional-dependencies]
 dev = [

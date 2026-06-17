@@ -17,6 +17,11 @@ body:
     id: prompt
     attributes:
       label: Proposed question
-      description: Include choices A through D and note the intended answer privately if needed.
+      description: Include assumptions, question text, and choices A through D. Do not include private answer-key material in public issues.
     validations:
       required: true
+  - type: input
+    id: skill
+    attributes:
+      label: Skill tested
+      description: Example: conceptual reasoning, quantitative calculation, diagnostic reasoning.

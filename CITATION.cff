@@ -7,3 +7,4 @@ authors:
 year: 2026
 license: MIT
 repository-code: "https://github.com/kainlulow/semiconductor-device-physics-benchmark"
+abstract: "A public benchmark scaffold for evaluating AI models on foundational semiconductor-device physics before semiconductor failure-analysis evaluation."

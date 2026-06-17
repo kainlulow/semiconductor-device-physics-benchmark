@@ -1,13 +1,17 @@
 # Question Taxonomy
 
-## Domains
+## Topics
 
-- `pn_junction`: built-in potential, depletion approximation, biasing, capacitance, breakdown.
-- `mos_capacitor`: flat-band, accumulation, depletion, inversion, threshold behavior.
-- `mosfet`: threshold voltage, linear region, saturation, channel-length effects, body effect.
+- PN junction
+- MOS capacitor
+- MOSFET
 
 ## Difficulty
 
-- `introductory`: single-concept recognition.
-- `intermediate`: applies a concept to a bias condition or qualitative device state.
-- `advanced`: combines effects or requires careful assumptions.
+- `basic`: direct recognition or single-concept reasoning.
+- `intermediate`: applied reasoning, bias interpretation, or simple calculation.
+- `advanced`: mechanism discrimination, diagnostic reasoning, or failure-style interpretation.
+
+## Skill
+
+The `skill` field names the reasoning capability being tested, such as conceptual reasoning, quantitative calculation, curve-shift diagnosis, short-channel-effect interpretation, or failure diagnosis.

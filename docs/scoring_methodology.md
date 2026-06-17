@@ -1,11 +1,12 @@
 # Scoring Methodology
 
-The default scorer compares each model response against an answer key by question ID.
+The scorer compares model `selected_option` values against a private answer key keyed by `question_id`.
 
 ## Metrics
 
-- Accuracy: correct answers divided by total scored questions.
-- Per-item correctness: selected answer equals the key answer.
-- Calibration bins: optional confidence analysis when responses include confidence values.
+- Accuracy: correct selected options divided by total keyed questions.
+- Grouped accuracy: topic, difficulty, and skill slices when a question file is supplied.
+- Mean confidence: average normalized confidence, where 100 becomes 1.0.
+- Brier score: mean squared error between selected-option confidence and correctness.
 
-Reasoning quality can be evaluated separately with the prompt in `prompts/reasoning_evaluation_prompt.txt`.
+Diagnostics include missing responses, duplicate response IDs, duplicate answer-key IDs, unknown response IDs, and malformed response rows.
